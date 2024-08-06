@@ -9,6 +9,7 @@ router.get("/:token", async (req, res) => {
 
   try {
     const [rows] = await database.query("SELECT * FROM websites WHERE owner = ?", [decoded.username]);
+
     res.json(rows);
   } catch (error) {
     console.error("Error during fetching websites:", error.message);

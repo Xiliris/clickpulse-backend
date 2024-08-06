@@ -1,0 +1,31 @@
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL UNIQUE, 
+);
+
+CREATE TABLE verify_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    code VARCHAR(255) NOT NULL,
+    active BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (username) REFERENCES users(username)
+);
+
+CREATE TABLE websites ( 
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner INT NOT NULL REFERENCES users(owner),
+    domain VARCHAR(255) NOT NULL UNIQUE,
+);
+
+CREATE TABLE verify_websites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    domain VARCHAR(255) NOT NULL,
+    active BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (domain) REFERENCES websites(domain)
+);

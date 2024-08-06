@@ -1,0 +1,72 @@
+let days, weeks, months, year = [
+  {
+    unique_visitors: [],
+    total_visitors: 0,
+    page_views: 0,
+    bounce_rate: 0,
+
+    visit_duration: {
+        total_visits: 0,
+        total_time: 0,
+    }
+
+    region: [
+      {
+        country: "",
+        count: 0,
+      },
+    ],
+    country: [
+      {
+        country: "",
+        count: 0,
+      },
+    ],
+    city: [
+      {
+        city: "",
+        count: 0,
+      },
+    ],
+
+    devices: [
+      {
+        device: "",
+        count: 0,
+      },
+    ],
+    browsers: [
+      {
+        browser: "",
+        count: 0,
+      },
+    ],
+    os: [
+      {
+        os: "",
+        count: 0,
+      },
+    ],
+
+    top_pages: [
+      {
+        url: "",
+        count: 0,
+      },
+    ],
+    entry_page: [
+      {
+        url: "",
+        count: 0,
+      },
+    ],
+    exit_page: [
+      {
+        url: "",
+        count: 0,
+      },
+    ],
+
+    date: "2021-08-01",
+  },
+];

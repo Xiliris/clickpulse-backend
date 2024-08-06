@@ -1,28 +1,35 @@
 const nodeMailer = require("nodemailer");
 
-const { FRONTEND_URL, serviceEmail, servicePassword, serviceWebsite } =
-  process.env;
+const {
+  FRONTEND_URL,
+  serviceEmail,
+  serviceEmailUsername,
+  serviceEmailPassword,
+  serviceWebsite,
+} = process.env;
 
 module.exports = async (userEmail, code) => {
   try {
     const htmlTemplate = require("./email-html");
 
-    const html = htmlTemplate(
-      `${FRONTEND_URL}/auth/verify/${code}`,
-      serviceWebsite
-    );
+    const html = htmlTemplate(code, serviceWebsite);
 
     const transporter = nodeMailer.createTransport({
+      service: "gmail",
       host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+      port: 465,
+      secure: true,
       auth: {
-        user: serviceEmail,
-        pass: servicePassword,
+        user: serviceEmailUsername,
+        pass: serviceEmailPassword,
       },
     });
 
     await transporter.sendMail({
+      auth: {
+        user: serviceEmailUsername,
+        pass: serviceEmailPassword,
+      },
       from: serviceEmail,
       to: userEmail,
       subject: "Verify your account.",

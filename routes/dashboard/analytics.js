@@ -22,7 +22,7 @@ router.post("/", async (req, res) => {
   };
 
   /* if (data.unique) return;*/
-
+  
   try {
     await entryPage(data.domain, data.entry_page);
     await exitPage(data.domain, data.exit_page);

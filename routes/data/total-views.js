@@ -2,10 +2,16 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
+const { generateDateRange, mergeDataWithDateRange } = require('../../modules/dateRangeUtils');
 
-router.get("/:id/:date", authenticate, async (req, res) => {
-  const { id, date } = req.params;
+router.get("/:id", authenticate, async (req, res) => {
+  const id = req.params.id;
   const user = req.user;
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json("Please provide both startDate and endDate.");
+  }
 
   try {
     const authorized = await authorize(id, user.username);
@@ -14,16 +20,31 @@ router.get("/:id/:date", authenticate, async (req, res) => {
       return res.status(401).json("Unauthorized.");
     }
 
-    const [rows] = await database.query("SELECT * FROM total_page WHERE domain = ? AND date = ?", [
-      authorized.domain,
-      date,
-    ]);
+    const [rows] = await database.query(
+      "SELECT * FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
+      [authorized.domain, startDate, endDate]
+    );
 
     if (rows.length === 0) {
-      return res.status(404).json("Total views page not found.");
+      return res.status(404).json("No data found for the specified date range.");
     }
 
-    res.json(rows[0]);
+    const formattedRows = rows.map(row => {
+      const originalDate = new Date(row.date);
+      originalDate.setDate(originalDate.getDate() + 1); // Add 1 day
+      return {
+        ...row,
+        date: originalDate.toISOString().slice(0, 10)
+      };
+    });
+
+    const dates = generateDateRange(startDate, endDate);
+
+    const result = mergeDataWithDateRange(dates, formattedRows, 'date', ['views', 'page_views'], 0);
+
+    console.table(result);
+
+    res.json(result);
   } catch (error) {
     console.error("Error during fetching total-views:", error.message);
     res.status(500).json("Internal server error.");

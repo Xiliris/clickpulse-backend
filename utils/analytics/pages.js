@@ -1,60 +1,40 @@
 const database = require("../../database/mysql");
 
-async function entryPage(domain, path) {
+async function trackPageViews(domain, path, table) {
+  const date = new Date().toISOString().slice(0, 10);
+
   try {
-    const [rows] = await database.query("SELECT * FROM entry_page WHERE domain = ? AND path = ?", [domain, path]);
+    const [rows] = await database.query(
+      `SELECT * FROM ${table} WHERE domain = ? AND path = ? AND date = ?`,
+      [domain, path, date]
+    );
 
     if (rows.length === 0) {
-      await database.query("INSERT INTO entry_page (domain, path, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        path,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
+      await database.query(
+        `INSERT INTO ${table} (domain, path, views, date) VALUES (?, ?, ?, ?)`,
+        [domain, path, 1, date]
+      );
     } else {
-      await database.query("UPDATE entry_page SET views = views + 1 WHERE domain = ? AND path = ?", [domain, path]);
+      await database.query(
+        `UPDATE ${table} SET views = views + 1 WHERE domain = ? AND path = ? AND date = ?`,
+        [domain, path, date]
+      );
     }
   } catch (error) {
-    console.error("Error during entry page:", error.message);
+    console.error(`Error during ${table} tracking:`, error.message);
   }
+}
+
+async function entryPage(domain, path) {
+  await trackPageViews(domain, path, "entry_page");
 }
 
 async function exitPage(domain, path) {
-  try {
-    const [rows] = await database.query("SELECT * FROM exit_page WHERE domain = ? AND path = ?", [domain, path]);
-
-    if (rows.length === 0) {
-      await database.query("INSERT INTO exit_page (domain, path, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        path,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
-    } else {
-      await database.query("UPDATE exit_page SET views = views + 1 WHERE domain = ? AND path = ?", [domain, path]);
-    }
-  } catch (error) {
-    console.error("Error during exit page:", error.message);
-  }
+  await trackPageViews(domain, path, "exit_page");
 }
 
 async function visitedPages(domain, path) {
-  try {
-    const [rows] = await database.query("SELECT * FROM visited_page WHERE domain = ? AND path = ?", [domain, path]);
-
-    if (rows.length === 0) {
-      await database.query("INSERT INTO visited_page (domain, path, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        path,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
-    } else {
-      await database.query("UPDATE visited_page SET views = views + 1 WHERE domain = ? AND path = ?", [domain, path]);
-    }
-  } catch (error) {
-    console.error("Error during visited pages:", error.message);
-  }
+  await trackPageViews(domain, path, "visited_page");
 }
 
 module.exports = {

@@ -1,60 +1,40 @@
 const database = require("../../database/mysql");
 
-async function device(domain, device) {
+async function trackMetric(domain, value, table, column) {
+  const date = new Date().toISOString().slice(0, 10);
+
   try {
-    const [rows] = await database.query("SELECT * FROM devices WHERE domain = ? AND device = ?", [domain, device]);
+    const [rows] = await database.query(
+      `SELECT * FROM ${table} WHERE domain = ? AND ${column} = ? AND date = ?`, 
+      [domain, value, date]
+    );
 
     if (rows.length === 0) {
-      await database.query("INSERT INTO devices (domain, device, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        device,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
+      await database.query(
+        `INSERT INTO ${table} (domain, ${column}, views, date) VALUES (?, ?, ?, ?)`, 
+        [domain, value, 1, date]
+      );
     } else {
-      await database.query("UPDATE devices SET views = views + 1 WHERE domain = ? AND device = ?", [domain, device]);
+      await database.query(
+        `UPDATE ${table} SET views = views + 1 WHERE domain = ? AND ${column} = ? AND date = ?`, 
+        [domain, value, date]
+      );
     }
   } catch (error) {
-    console.error("Error during device:", error.message);
+    console.error(`Error during ${table}:`, error.message);
   }
+}
+
+async function device(domain, device) {
+  await trackMetric(domain, device, 'devices', 'device');
 }
 
 async function browser(domain, browser) {
-  try {
-    const [rows] = await database.query("SELECT * FROM browsers WHERE domain = ? AND browser = ?", [domain, browser]);
-
-    if (rows.length === 0) {
-      await database.query("INSERT INTO browsers (domain, browser, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        browser,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
-    } else {
-      await database.query("UPDATE browsers SET views = views + 1 WHERE domain = ? AND browser = ?", [domain, browser]);
-    }
-  } catch (error) {
-    console.error("Error during browser:", error.message);
-  }
+  await trackMetric(domain, browser, 'browsers', 'browser');
 }
 
 async function os(domain, os) {
-  try {
-    const [rows] = await database.query("SELECT * FROM operating_systems WHERE domain = ? AND os = ?", [domain, os]);
-
-    if (rows.length === 0) {
-      await database.query("INSERT INTO operating_systems (domain, os, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        os,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
-    } else {
-      await database.query("UPDATE operating_systems SET views = views + 1 WHERE domain = ? AND os = ?", [domain, os]);
-    }
-  } catch (error) {
-    console.error("Error during operating_systems:", error.message);
-  }
+  await trackMetric(domain, os, 'operating_systems', 'os');
 }
 
 module.exports = {

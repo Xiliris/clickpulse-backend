@@ -25,7 +25,7 @@ router.get("/:id", authenticate, async (req, res) => {
       "SELECT * FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
       [authorized.domain, startDate, endDate]
     );
-
+    
     // Generate the full date range
     const dates = generateDateRange(startDate, endDate);
 

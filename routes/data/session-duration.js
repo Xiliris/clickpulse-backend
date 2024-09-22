@@ -27,28 +27,29 @@ router.get("/:id", authenticate, async (req, res) => {
       "SELECT date, SUM(duration) AS total_duration, COUNT(requests) AS total_requests FROM session_duration WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY date",
       [authorized.domain, startDate, endDate]
     );
+    const dates = generateDateRange(startDate, endDate);
 
     if (rows.length === 0) {
-      const dates = generateDateRange(startDate, endDate);
       const result = mergeDataWithDateRange(
         dates,
         [],
         "date",
-        ["averageDuration"],
-        null
+        ["visit_duration"],
+        0
       );
       return res.json(result);
     }
 
     const formattedRows = rows.map((row) => {
+      const originalDate = new Date(row.date);
+      originalDate.setDate(originalDate.getDate() + 1);
       const averageSessionDuration = row.total_duration / row.total_requests;
       return {
-        date: row.date,
+        date: originalDate.toISOString().slice(0, 10),
         visit_duration: averageSessionDuration,
       };
     });
 
-    const dates = generateDateRange(startDate, endDate);
 
     const result = mergeDataWithDateRange(
       dates,

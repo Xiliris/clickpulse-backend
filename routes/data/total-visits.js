@@ -2,7 +2,10 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
-const { generateDateRange, mergeDataWithDateRange } = require('../../modules/dateRangeUtils');
+const {
+  generateDateRange,
+  mergeDataWithDateRange,
+} = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const id = req.params.id;
@@ -21,28 +24,29 @@ router.get("/:id", authenticate, async (req, res) => {
     }
 
     const [rows] = await database.query(
-      "SELECT * FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
+      "SELECT date, views FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
       [authorized.domain, startDate, endDate]
     );
 
-    if (rows.length === 0) {
-      return res.status(404).json("No data found for the specified date range.");
-    }
-
-    const formattedRows = rows.map(row => {
+    const formattedRows = rows.map((row) => {
       const originalDate = new Date(row.date);
-      originalDate.setDate(originalDate.getDate() + 1); // Add 1 day
+      originalDate.setDate(originalDate.getDate() + 1);
       return {
-        ...row,
-        date: originalDate.toISOString().slice(0, 10)
+        date: originalDate.toISOString().slice(0, 10),
+        total_visits: row.views,
       };
     });
+    console.log(startDate, endDate);
 
     const dates = generateDateRange(startDate, endDate);
 
-    const result = mergeDataWithDateRange(dates, formattedRows, 'date', ['views', 'page_views'], 0);
-
-    console.table(result);
+    const result = mergeDataWithDateRange(
+      dates,
+      formattedRows,
+      "date",
+      ["total_visits"],
+      0
+    );
 
     res.json(result);
   } catch (error) {

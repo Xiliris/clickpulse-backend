@@ -1,6 +1,13 @@
-const { entryPage, exitPage, visitedPages } = require("../../utils/analytics/pages");
+const {
+  entryPage,
+  exitPage,
+  visitedPages,
+} = require("../../utils/analytics/pages");
 const { os, browser, device } = require("../../utils/analytics/client");
-const { bounce_rate, session_duration } = require("../../utils/analytics/engagement");
+const {
+  bounce_rate,
+  session_duration,
+} = require("../../utils/analytics/engagement");
 const totalPage = require("../../utils/analytics/total-page");
 
 const router = require("express").Router();
@@ -21,8 +28,8 @@ router.post("/", async (req, res) => {
     bounce_rate: req.body.bounce_rate,
   };
 
-  /* if (data.unique) return;*/
-  
+  if (data.unique) return;
+
   try {
     await entryPage(data.domain, data.entry_page);
     await exitPage(data.domain, data.exit_page);

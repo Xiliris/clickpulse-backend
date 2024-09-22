@@ -8,7 +8,7 @@ const {
 } = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
   const user = req.user;
   const { startDate, endDate } = req.query;
 
@@ -24,27 +24,22 @@ router.get("/:id", authenticate, async (req, res) => {
     }
 
     const [rows] = await database.query(
-      "SELECT date, SUM(duration) AS total_duration, COUNT(requests) AS total_requests FROM session_duration WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY date",
+      "SELECT date, page_views FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
       [authorized.domain, startDate, endDate]
     );
 
     if (rows.length === 0) {
-      const dates = generateDateRange(startDate, endDate);
-      const result = mergeDataWithDateRange(
-        dates,
-        [],
-        "date",
-        ["averageDuration"],
-        null
-      );
-      return res.json(result);
+      return res
+        .status(404)
+        .json("No data found for the specified date range.");
     }
 
     const formattedRows = rows.map((row) => {
-      const averageSessionDuration = row.total_duration / row.total_requests;
+      const originalDate = new Date(row.date);
+      originalDate.setDate(originalDate.getDate() + 1);
       return {
-        date: row.date,
-        visit_duration: averageSessionDuration,
+        date: originalDate.toISOString().slice(0, 10),
+        total_page_visits: row.page_views,
       };
     });
 
@@ -54,13 +49,13 @@ router.get("/:id", authenticate, async (req, res) => {
       dates,
       formattedRows,
       "date",
-      ["visit_duration"],
+      ["total_page_visits"],
       0
     );
 
     res.json(result);
   } catch (error) {
-    console.error("Error during fetching session duration:", error.message);
+    console.error("Error during fetching total-views:", error.message);
     res.status(500).json("Internal server error.");
   }
 });

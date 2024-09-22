@@ -2,11 +2,15 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
+const {
+  generateDateRange,
+  mergeDataWithDateRange,
+} = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
-  const { startDate, endDate } = req.query;
   const user = req.user;
+  const { startDate, endDate } = req.query;
 
   if (!startDate || !endDate) {
     return res.status(400).json("Please provide both startDate and endDate.");
@@ -23,18 +27,37 @@ router.get("/:id", authenticate, async (req, res) => {
       "SELECT date, SUM(duration) AS total_duration, COUNT(requests) AS total_requests FROM session_duration WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY date",
       [authorized.domain, startDate, endDate]
     );
+    const dates = generateDateRange(startDate, endDate);
 
     if (rows.length === 0) {
-      return res.status(404).json("No session duration records found for the specified date range.");
+      const result = mergeDataWithDateRange(
+        dates,
+        [],
+        "date",
+        ["visit_duration"],
+        0
+      );
+      return res.json(result);
     }
 
-    const result = rows.map(row => {
+    const formattedRows = rows.map((row) => {
+      const originalDate = new Date(row.date);
+      originalDate.setDate(originalDate.getDate() + 1);
       const averageSessionDuration = row.total_duration / row.total_requests;
       return {
-        date: row.date,
-        averageDuration: formatDuration(averageSessionDuration),
+        date: originalDate.toISOString().slice(0, 10),
+        visit_duration: averageSessionDuration,
       };
     });
+
+
+    const result = mergeDataWithDateRange(
+      dates,
+      formattedRows,
+      "date",
+      ["visit_duration"],
+      0
+    );
 
     res.json(result);
   } catch (error) {
@@ -42,12 +65,5 @@ router.get("/:id", authenticate, async (req, res) => {
     res.status(500).json("Internal server error.");
   }
 });
-
-function formatDuration(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-
-  return `${minutes}m ${remainingSeconds}s`;
-}
 
 module.exports = router;

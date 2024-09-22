@@ -2,6 +2,10 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
+const {
+  generateDateRange,
+  mergeDataWithDateRange,
+} = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
@@ -29,20 +33,27 @@ router.get("/:id", authenticate, async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json("No data found for the specified date range.");
+      return res
+        .status(404)
+        .json("No data found for the specified date range.");
     }
 
-    const bounceRatesByDate = rows.map(row => {
-      const bounceRate = ((row.totalBounces / row.totalRequests) * 100).toFixed(1);
-      return {
-        date: row.date,
-        bounceRate: bounceRate + "%",
-        bounces: row.totalBounces,
-        requests: row.totalRequests
-      };
-    });
+    const formattedRows = rows.map((row) => ({
+      date: row.date,
+      bounce_rate: ((row.totalBounces / row.totalRequests) * 100).toFixed(1),
+    }));
 
-    res.json(bounceRatesByDate);
+    const dateRange = generateDateRange(startDate, endDate);
+
+    const mergedData = mergeDataWithDateRange(
+      dateRange,
+      formattedRows,
+      "date",
+      ["bounce_rate"],
+      "0.0"
+    );
+
+    res.json(mergedData);
   } catch (error) {
     console.error("Error during fetching bounce-rate data:", error.message);
     res.status(500).json("Internal server error.");

@@ -2,30 +2,38 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
-const { generateDateRange, mergeDataWithDateRange } = require('../../modules/dateRangeUtils');
+const { generateDateRange, mergeDataWithDateRange, addDayDate } = require('../../modules/dateRangeUtils');
 
 router.get("/:id", authenticate, async (req, res) => {
   const id = req.params.id;
   const user = req.user;
   let { startDate, endDate } = req.query;
 
-  if (!startDate || !endDate) {
-    return res.status(400).json("Please provide both startDate and endDate.");
-  }
-
+  
   try {
     const authorized = await authorize(id, user.username);
-
+    
     if (!authorized) {
       return res.status(401).json("Unauthorized.");
     }
+    
+    let rows;
 
-    // Query data for the given date range
-    let [rows] = await database.query(
-      "SELECT * FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
-      [authorized.domain, startDate, endDate]
-    );
+    if (!startDate || !endDate) {
+       [rows] = await database.query(
+        "SELECT * FROM total_page WHERE domain = ?",
+        [authorized.domain]
+      );
 
+      startDate = addDayDate(rows[0].date);
+      endDate = addDayDate(rows[rows.length - 1].date);
+    } else {
+      [rows] = await database.query(
+        "SELECT * FROM total_page WHERE domain = ? AND date BETWEEN ? AND ?",
+        [authorized.domain, startDate, endDate]
+      );
+    }
+    
     // Generate the full date range
     const dates = generateDateRange(startDate, endDate);
 

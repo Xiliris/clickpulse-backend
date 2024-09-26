@@ -37,7 +37,15 @@ function generateDateRange(startDate, endDate) {
   
   
   
+  function standardizeDate(date) {
+    return date.toISOString().slice(0, 10)
+  }
   
-  
-  module.exports = { generateDateRange, mergeDataWithDateRange };
+  function addDayDate(date) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  module.exports = { generateDateRange, mergeDataWithDateRange, standardizeDate, addDayDate };
   

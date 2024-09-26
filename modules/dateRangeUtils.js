@@ -35,7 +35,31 @@ function mergeDataWithDateRange(dates, data, dateKey, valueKeys, defaultValue) {
       date,
       ...Object.fromEntries(valueKeys.map((key) => [key, defaultValue])),
     };
-  });
-}
+  
+    // Create a map with formatted date strings
+    const dataMap = new Map(data.map(item => [formatDate(item[dateKey]), item]));
+  
+    // Merge data with date range
+    return dates.map(date => {
+      const item = dataMap.get(date);
+      if (item) {
+        return { date, ...Object.fromEntries(valueKeys.map(key => [key, item[key]])) };
+      }
+      return { date, ...Object.fromEntries(valueKeys.map(key => [key, defaultValue])) };
+    });
+  }
+  
+  
+  
+  function standardizeDate(date) {
+    return date.toISOString().slice(0, 10)
+  }
+  
+  function addDayDate(date) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
 
-module.exports = { generateDateRange, mergeDataWithDateRange };
+  module.exports = { generateDateRange, mergeDataWithDateRange, standardizeDate, addDayDate };
+  

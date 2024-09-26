@@ -5,28 +5,40 @@ const database = require("../../database/mysql");
 const {
   generateDateRange,
   mergeDataWithDateRange,
+  addDayDate
 } = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const user = req.user;
-  const { startDate, endDate } = req.query;
+  let { startDate, endDate } = req.query;
 
-  if (!startDate || !endDate) {
-    return res.status(400).json("Please provide both startDate and endDate.");
-  }
-
+  
   try {
     const authorized = await authorize(id, user.username);
-
+    
     if (!authorized) {
       return res.status(401).json("Unauthorized.");
     }
+    
+    let rows;
+    
+    if (!startDate || !endDate) {
+       [rows] = await database.query(
+        "SELECT date, SUM(duration) AS total_duration, COUNT(requests) AS total_requests FROM session_duration WHERE domain = ? GROUP BY date",
+        [authorized.domain]
+      );      
+      startDate = addDayDate(rows[0].date);
+      endDate = addDayDate(rows[rows.length - 1].date);
+    } else {
+       [rows] = await database.query(
+        "SELECT date, SUM(duration) AS total_duration, COUNT(requests) AS total_requests FROM session_duration WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY date",
+        [authorized.domain, startDate, endDate]
+      );
+    }
 
-    const [rows] = await database.query(
-      "SELECT date, SUM(duration) AS total_duration, COUNT(requests) AS total_requests FROM session_duration WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY date",
-      [authorized.domain, startDate, endDate]
-    );
+
+
     const dates = generateDateRange(startDate, endDate);
 
     if (rows.length === 0) {

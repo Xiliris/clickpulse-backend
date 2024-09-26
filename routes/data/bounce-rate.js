@@ -5,45 +5,67 @@ const database = require("../../database/mysql");
 const {
   generateDateRange,
   mergeDataWithDateRange,
+  addDayDate
 } = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const user = req.user;
-  const { startDate, endDate } = req.query;
+  let { startDate, endDate } = req.query;
 
-  if (!startDate || !endDate) {
-    return res.status(400).json("Please provide both startDate and endDate.");
-  }
-
+  
   try {
     const authorized = await authorize(id, user.username);
-
+    
     if (!authorized) {
       return res.status(401).json("Unauthorized.");
     }
+    
+    let rows;
 
-    const [rows] = await database.query(
+    if (!startDate || !endDate) {
+      [rows] = await database.query(
+        `SELECT date, SUM(bounces) AS totalBounces, SUM(requests) AS totalRequests
+         FROM bounce_rate 
+         GROUP BY date 
+         ORDER BY date`,
+         [authorized.domain]
+        );
+        startDate = addDayDate(rows[0].date);
+        endDate = addDayDate(rows[rows.length - 1].date);
+    } else {
+     [rows] = await database.query(
       `SELECT date, SUM(bounces) AS totalBounces, SUM(requests) AS totalRequests
        FROM bounce_rate 
        WHERE domain = ? AND date BETWEEN ? AND ? 
        GROUP BY date 
        ORDER BY date`,
-      [authorized.domain, startDate, endDate]
-    );
-
-    if (rows.length === 0) {
-      return res
-        .status(404)
-        .json("No data found for the specified date range.");
+       [authorized.domain, startDate, endDate]
+      );
     }
 
-    const formattedRows = rows.map((row) => ({
-      date: row.date,
-      bounce_rate: ((row.totalBounces / row.totalRequests) * 100).toFixed(1),
-    }));
+      const dateRange = generateDateRange(startDate, endDate);
 
-    const dateRange = generateDateRange(startDate, endDate);
+    if (rows.length === 0) {    
+        const result = mergeDataWithDateRange(
+        dates,
+        [],
+        "date",
+        ["bounce_rate"],
+        0
+      );
+      return res.json(result);
+    }
+
+    const formattedRows = rows.map((row) => {
+      const originalDate = new Date(row.date);
+      originalDate.setDate(originalDate.getDate() + 1);
+      return {
+        date: originalDate.toISOString().slice(0, 10),
+        bounce_rate: ((row.totalBounces / row.totalRequests) * 100).toFixed(1),
+      };
+    });
+
 
     const mergedData = mergeDataWithDateRange(
       dateRange,

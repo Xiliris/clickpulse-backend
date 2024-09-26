@@ -33,6 +33,7 @@ router.get("/:id", authenticate, async (req, res) => {
         [authorized.domain, startDate, endDate]
       );
     }
+
     
     // Generate the full date range
     const dates = generateDateRange(startDate, endDate);

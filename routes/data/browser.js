@@ -7,12 +7,7 @@ router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const user = req.user;
 
-  const { startDate, endDate } = req.query;
-
-  // Validate if both startDate and endDate are provided
-  if (!startDate || !endDate) {
-    return res.status(400).json("Please provide both startDate and endDate.");
-  }
+  let { startDate, endDate } = req.query;
 
   try {
     const authorized = await authorize(id, user.username);
@@ -21,21 +16,28 @@ router.get("/:id", authenticate, async (req, res) => {
       return res.status(401).json("Unauthorized.");
     }
 
-    // Fetching and aggregating data by browser
-    const [rows] = await database.query(
-      `SELECT browser, date, COUNT(*) AS totalViews
-       FROM browsers
-       WHERE domain = ? AND date BETWEEN ? AND ?
-       GROUP BY browser, date
-       ORDER BY date ASC`,
-      [authorized.domain, startDate, endDate]
-    );
+    let rows;
 
-    if (rows.length === 0) {
-      return res.status(404).json("No browser records found for the specified date range.");
+    if (!startDate || !endDate) {
+      [rows] = await database.query("SELECT * FROM browsers WHERE domain = ?", [
+        authorized.domain,
+      ]);
+      startDate = addDayDate(rows[0].date);
+      endDate = addDayDate(rows[rows.length - 1].date);
+    } else {
+      [rows] = await database.query(
+        "SELECT browser, SUM(visits) AS total_visits, SUM(session_duration) AS total_session_duration, SUM(bounce_rate) AS total_bounce_rate  FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? ORDER BY date ASC",
+        [authorized.domain, startDate, endDate]
+      );
     }
 
-    res.json(rows);  
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json("No browser records found for the specified date range.");
+    }
+
+    res.json(rows);
   } catch (error) {
     console.error("Error during fetching browsers:", error.message);
     res.status(500).json("Internal server error.");

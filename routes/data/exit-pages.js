@@ -2,17 +2,13 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
+const { addDayDate } = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const user = req.user;
 
-  const { startDate, endDate } = req.query;
-
-  // Validate if both startDate and endDate are provided
-  if (!startDate || !endDate) {
-    return res.status(400).json("Please provide both startDate and endDate.");
-  }
+  let { startDate, endDate } = req.query;
 
   try {
     const authorized = await authorize(id, user.username);
@@ -21,21 +17,28 @@ router.get("/:id", authenticate, async (req, res) => {
       return res.status(401).json("Unauthorized.");
     }
 
-    // Fetching and aggregating data by browser
-    const [rows] = await database.query(
-      `SELECT browser, date, COUNT(*) AS totalViews
-       FROM browsers
-       WHERE domain = ? AND date BETWEEN ? AND ?
-       GROUP BY browser, date
-       ORDER BY date ASC`,
+    let rows;
+
+    if (!startDate || !endDate) {
+      [rows] = await database.query(
+        "SELECT * FROM exit_page WHERE domain = ? ORDER BY date DESC",
+        [authorized.domain]
+      );
+      endDate = addDayDate(rows[0].date);
+      startDate = addDayDate(rows[rows.length - 1].date);
+    }
+    [rows] = await database.query(
+      "SELECT path, SUM(views) AS total_visits FROM exit_page WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY path ORDER BY total_visits DESC",
       [authorized.domain, startDate, endDate]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json("No browser records found for the specified date range.");
+      return res
+        .status(404)
+        .json("No exit page records found for the specified date range.");
     }
 
-    res.json(rows);  
+    res.json(rows);
   } catch (error) {
     console.error("Error during fetching browsers:", error.message);
     res.status(500).json("Internal server error.");

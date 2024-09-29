@@ -28,14 +28,24 @@ router.post("/", async (req, res) => {
     bounce_rate: req.body.bounce_rate,
   };
 
-  if (data.unique) return;
-
+  /*if (data.unique) return;
+   */
   try {
     await entryPage(data.domain, data.entry_page);
     await exitPage(data.domain, data.exit_page);
-    await os(data.domain, data.os);
-    await browser(data.domain, data.browser);
-    await device(data.domain, data.device);
+    await os(data.domain, data.os, data.session_duration, data.bounce_rate);
+    await browser(
+      data.domain,
+      data.browser,
+      data.session_duration,
+      data.bounce_rate
+    );
+    await device(
+      data.domain,
+      data.device,
+      data.session_duration,
+      data.bounce_rate
+    );
     await bounce_rate(data.domain, data.bounce_rate);
     await session_duration(data.domain, data.session_duration);
     await totalPage(data.domain, data.visited_pages.length + 1);

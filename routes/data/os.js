@@ -2,6 +2,7 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
+const { addDayDate } = require("../../modules/dateRangeUtils");
 
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
@@ -19,22 +20,23 @@ router.get("/:id", authenticate, async (req, res) => {
     let rows;
 
     if (!startDate || !endDate) {
-      [rows] = await database.query("SELECT * FROM browsers WHERE domain = ?", [
-        authorized.domain,
-      ]);
-      startDate = addDayDate(rows[0].date);
-      endDate = addDayDate(rows[rows.length - 1].date);
-    } else {
       [rows] = await database.query(
-        "SELECT browser, SUM(visits) AS total_visits, SUM(session_duration) AS total_session_duration, SUM(bounce_rate) AS total_bounce_rate  FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? ORDER BY date ASC",
-        [authorized.domain, startDate, endDate]
+        "SELECT * FROM operating_systems WHERE domain = ? ORDER BY date DESC",
+        [authorized.domain]
       );
+      endDate = addDayDate(rows[0].date);
+      startDate = addDayDate(rows[rows.length - 1].date);
     }
+
+    [rows] = await database.query(
+      "SELECT os, SUM(visits) AS total_visits, SUM(session_duration) AS total_session_duration, SUM(bounce_rate) AS total_bounce_rate FROM operating_systems WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY os ORDER BY total_visits DESC",
+      [authorized.domain, startDate, endDate]
+    );
 
     if (rows.length === 0) {
       return res
         .status(404)
-        .json("No browser records found for the specified date range.");
+        .json("No os records found for the specified date range.");
     }
 
     res.json(rows);

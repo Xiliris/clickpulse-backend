@@ -27,11 +27,11 @@ router.get("/:id", authenticate, async (req, res) => {
         `SELECT date, SUM(bounces) AS totalBounces, SUM(requests) AS totalRequests
          FROM bounce_rate 
          GROUP BY date 
-         ORDER BY date`,
+         ORDER BY date DESC`,
         [authorized.domain]
       );
-      startDate = addDayDate(rows[0].date);
-      endDate = addDayDate(rows[rows.length - 1].date);
+      endDate = addDayDate(rows[0].date);
+      startDate = addDayDate(rows[rows.length - 1].date);
     } else {
       [rows] = await database.query(
         `SELECT date, SUM(bounces) AS totalBounces, SUM(requests) AS totalRequests

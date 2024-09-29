@@ -45,8 +45,8 @@ router.post("/", async (req, res) => {
       data.device,
       data.session_duration,
       data.bounce_rate
-    ),
-      await bounce_rate(data.domain, data.bounce_rate);
+    );
+    await bounce_rate(data.domain, data.bounce_rate);
     await session_duration(data.domain, data.session_duration);
     await totalPage(data.domain, data.visited_pages.length + 1);
 

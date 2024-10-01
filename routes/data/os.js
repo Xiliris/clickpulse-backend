@@ -29,7 +29,7 @@ router.get("/:id", authenticate, async (req, res) => {
     }
 
     [rows] = await database.query(
-      "SELECT os, SUM(visits) AS total_visits, SUM(session_duration) AS total_session_duration, SUM(bounce_rate) AS total_bounce_rate FROM operating_systems WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY os ORDER BY total_visits DESC",
+      "SELECT os, SUM(visits) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM operating_systems WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY os ORDER BY visits DESC",
       [authorized.domain, startDate, endDate]
     );
 

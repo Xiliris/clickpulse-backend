@@ -9,7 +9,6 @@ router.get("/:id", authenticate, async (req, res) => {
   const user = req.user;
 
   let { startDate, endDate } = req.query;
-  console.log(startDate, endDate);
 
   try {
     const authorized = await authorize(id, user.username);
@@ -31,7 +30,7 @@ router.get("/:id", authenticate, async (req, res) => {
     }
 
     [rows] = await database.query(
-      "SELECT browser, SUM(visits) AS total_visits, SUM(session_duration) AS total_session_duration, SUM(bounce_rate) AS total_bounce_rate FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY browser ORDER BY total_visits DESC",
+      "SELECT browser, SUM(visits) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY browser ORDER BY visits DESC",
       [authorized.domain, startDate, endDate]
     );
 

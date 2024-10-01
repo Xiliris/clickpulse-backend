@@ -28,7 +28,7 @@ router.get("/:id", authenticate, async (req, res) => {
       startDate = addDayDate(rows[rows.length - 1].date);
     }
     [rows] = await database.query(
-      "SELECT path, SUM(views) AS total_visits FROM visited_page WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY path ORDER BY total_visits DESC",
+      "SELECT path, SUM(views) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM visited_page WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY path ORDER BY visits DESC",
       [authorized.domain, startDate, endDate]
     );
 
@@ -40,7 +40,7 @@ router.get("/:id", authenticate, async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error("Error during fetching browsers:", error.message);
+    console.error("Error during fetching top_pages:", error.message);
     res.status(500).json("Internal server error.");
   }
 });

@@ -12,7 +12,6 @@ const totalPage = require("../../utils/analytics/total-page");
 
 const router = require("express").Router();
 router.post("/", async (req, res) => {
-  console.log("HIT");
   const data = {
     domain: req.body.domain,
     unique: req.body.unique,
@@ -27,21 +26,26 @@ router.post("/", async (req, res) => {
     device: req.body.device,
     session_duration: req.body.session_duration,
     bounce_rate: req.body.bounce_rate,
+    elements_clicked: req.body.elements_clicked,
   };
 
-  /*if (data.unique) return;
+  console.log(req.body);
+
+  /*
+  if (data.unique) return;
    */
+
   try {
     await entryPage(
       data.domain,
       data.entry_page,
-      data.session_duration,
+      data.session_duration / data.visited_pages.length,
       data.bounce_rate
     );
     await exitPage(
       data.domain,
       data.exit_page,
-      data.session_duration,
+      data.session_duration / data.visited_pages.length,
       data.bounce_rate
     );
     await os(data.domain, data.os, data.session_duration, data.bounce_rate);
@@ -65,7 +69,7 @@ router.post("/", async (req, res) => {
       await visitedPages(
         data.domain,
         data.entry_page,
-        data.session_duration,
+        data.session_duration / data.visited_pages.length,
         data.bounce_rate
       );
     } else {
@@ -74,7 +78,7 @@ router.post("/", async (req, res) => {
           await visitedPages(
             data.domain,
             visitedPage,
-            data.session_duration,
+            data.session_duration / data.visited_pages.length,
             data.bounce_rate
           );
         }

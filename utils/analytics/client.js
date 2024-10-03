@@ -64,8 +64,20 @@ async function os(domain, os, session, isBounce) {
   );
 }
 
+async function referrer(domain, os, session, isBounce) {
+  await trackMetric(
+    domain,
+    os,
+    session,
+    isBounce ? 1 : 0,
+    "referrer",
+    "source"
+  );
+}
+
 module.exports = {
   device,
   browser,
   os,
+  referrer,
 };

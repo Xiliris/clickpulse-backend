@@ -3,39 +3,53 @@ const {
   exitPage,
   visitedPages,
 } = require("../../utils/analytics/pages");
-const { os, browser, device } = require("../../utils/analytics/client");
+const {
+  os,
+  browser,
+  device,
+  referrer,
+} = require("../../utils/analytics/client");
 const {
   bounce_rate,
   session_duration,
 } = require("../../utils/analytics/engagement");
 const totalPage = require("../../utils/analytics/total-page");
+const { anchors, buttons } = require("../../utils/analytics/clicks");
+const { location } = require("../../utils/analytics/location");
 
 const router = require("express").Router();
 router.post("/", async (req, res) => {
   const data = {
     domain: req.body.domain,
     unique: req.body.unique,
-    entry_page: req.body.entry_page,
-    exit_page: req.body.exit_page,
+    entry_page: req.body.entry_page || "/",
+    exit_page: req.body.exit_page || "/",
     visited_pages: req.body.visited_pages || [],
-    ip: req.body.ip,
-    country: req.body.country,
-    country_code: req.body.country_code,
-    os: req.body.os,
-    browser: req.body.browser,
-    device: req.body.device,
-    session_duration: req.body.session_duration,
-    bounce_rate: req.body.bounce_rate,
-    elements_clicked: req.body.elements_clicked,
+    ip: req.body.ip || "0.0.0.0",
+    country: req.body.country || "Unknown Country",
+    country_code: req.body.country_code || "XX",
+    os: req.body.os || "Not set",
+    browser: req.body.browser || "Not set",
+    device: req.body.device || "Not set",
+    session_duration: req.body.session_duration || 0,
+    bounce_rate: req.body.bounce_rate || 100,
+    buttons: req.body.buttons || [],
+    anchors: req.body.anchors || [],
+    referrer: req.body.referrer || "Direct / None",
   };
 
-  console.log(req.body);
-
-  /*
   if (data.unique) return;
-   */
+  if (!data.domain) return;
 
   try {
+    await location(
+      data.domain,
+      data.country,
+      data.session_duration,
+      data.bounce_rate,
+      data.country_code
+    );
+
     await entryPage(
       data.domain,
       data.entry_page,
@@ -61,6 +75,12 @@ router.post("/", async (req, res) => {
       data.session_duration,
       data.bounce_rate
     );
+    await referrer(
+      data.domain,
+      data.referrer,
+      data.session_duration,
+      data.bounce_rate
+    );
     await bounce_rate(data.domain, data.bounce_rate);
     await session_duration(data.domain, data.session_duration);
     await totalPage(data.domain, data.visited_pages.length + 1);
@@ -69,7 +89,7 @@ router.post("/", async (req, res) => {
       await visitedPages(
         data.domain,
         data.entry_page,
-        data.session_duration / data.visited_pages.length,
+        data.session_duration / (data.visited_pages.length + 1),
         data.bounce_rate
       );
     } else {
@@ -78,10 +98,32 @@ router.post("/", async (req, res) => {
           await visitedPages(
             data.domain,
             visitedPage,
-            data.session_duration / data.visited_pages.length,
+            data.session_duration / (data.visited_pages.length + 1),
             data.bounce_rate
           );
         }
+      }
+    }
+
+    if (Array.isArray(data.buttons)) {
+      for (const button of data.buttons) {
+        await buttons(
+          data.domain,
+          button.elementId,
+          button.content,
+          button.clicks
+        );
+      }
+    }
+
+    if (Array.isArray(data.anchors)) {
+      for (const anchor of data.anchors) {
+        await anchors(
+          data.domain,
+          anchor.elementId,
+          anchor.content,
+          anchor.clicks
+        );
       }
     }
 

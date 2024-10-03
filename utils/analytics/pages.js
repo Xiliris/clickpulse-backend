@@ -1,13 +1,8 @@
 const database = require("../../database/mysql");
 
-async function trackPageViews(
-  domain,
-  path,
-  sessionDuration,
-  bounceRate,
-  table
-) {
+async function trackPageViews(domain, path, session, bounceRate, table) {
   const date = new Date().toISOString().slice(0, 10);
+  let sessionDuration = isFinite(session) ? session : 0;
 
   try {
     const [rows] = await database.query(

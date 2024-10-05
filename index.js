@@ -28,7 +28,7 @@ routeHandler.handleRoutes();
 
 app.listen(PORT, async () => {
   console.log(`> Started on port: ${PORT}`);
-  sendVerifyEmail("adnanskopljak420@gmail.com", "42069");
+  // sendVerifyEmail("adnanskopljak420@gmail.com", "42069");
 
   try {
     await database.query("SELECT 1");

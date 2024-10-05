@@ -4,6 +4,7 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3000;
+const sendVerifyEmail = require("./modules/sendVerifyEmail");
 
 const RouteHandler = require("@xiliris/express-route-handler");
 const path = require("path");
@@ -27,6 +28,7 @@ routeHandler.handleRoutes();
 
 app.listen(PORT, async () => {
   console.log(`> Started on port: ${PORT}`);
+  sendVerifyEmail("adnanskopljak420@gmail.com", "42069");
 
   try {
     await database.query("SELECT 1");

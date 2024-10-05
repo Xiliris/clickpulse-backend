@@ -1,41 +1,31 @@
-const nodeMailer = require("nodemailer");
+const htmlTemplate = require("./email-html");
+const { EMAIL, EMAIL_PASSWORD, FRONTEND_URL } = process.env;
 
-const {
-  FRONTEND_URL,
-  serviceEmail,
-  serviceEmailUsername,
-  serviceEmailPassword,
-  serviceWebsite,
-} = process.env;
+const nodemailer = require("nodemailer");
 
 module.exports = async (userEmail, code) => {
   try {
-    const htmlTemplate = require("./email-html");
+    const html = htmlTemplate(code, FRONTEND_URL);
 
-    const html = htmlTemplate(code, serviceWebsite);
-
-    const transporter = nodeMailer.createTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+    const transporter = nodemailer.createTransport({
+      host: "mail.privateemail.com",
+      port: 587,
+      secure: false,
       auth: {
-        user: serviceEmailUsername,
-        pass: serviceEmailPassword,
+        user: EMAIL,
+        pass: EMAIL_PASSWORD,
       },
     });
 
-    await transporter.sendMail({
-      auth: {
-        user: serviceEmailUsername,
-        pass: serviceEmailPassword,
-      },
-      from: serviceEmail,
+    const mailOptions = {
+      from: `No Reply <${EMAIL}>`,
       to: userEmail,
-      subject: "Verify your account.",
+      subject: "Verify your account at clickpulse.xyz",
       html,
-    });
-  } catch (error) {
-    console.error(error);
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.error(err);
   }
 };

@@ -12,13 +12,22 @@ router.post("/", async (req, res) => {
   if (!user) return res.status(400).json("Invalid token.");
 
   try {
-    const [rows] = await database.query("SELECT * FROM websites WHERE domain = ?", [domain]);
+    const [rows] = await database.query(
+      "SELECT * FROM websites WHERE domain = ?",
+      [domain]
+    );
     const websiteExists = rows.length > 0;
 
     if (websiteExists) return res.status(400).json("Website already exists.");
 
-    await database.query("INSERT INTO websites (domain, owner) VALUES (?, ?)", [domain, user.username]);
-    await database.query("INSERT INTO verify_websites (domain, active) VALUES (?, 0)", [domain]);
+    await database.query("INSERT INTO websites (domain, owner) VALUES (?, ?)", [
+      domain,
+      user.username,
+    ]);
+    await database.query(
+      "INSERT INTO verify_websites (domain, active) VALUES (?, 0)",
+      [domain]
+    );
 
     res.status(200).json("Website created.");
   } catch (e) {

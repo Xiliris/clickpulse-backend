@@ -1,3 +1,5 @@
+const { activateWebsite } = require("../../utils/analytics/activate-website");
+
 const {
   entryPage,
   exitPage,
@@ -13,7 +15,9 @@ const {
   bounce_rate,
   session_duration,
 } = require("../../utils/analytics/engagement");
+
 const totalPage = require("../../utils/analytics/total-page");
+
 const { anchors, buttons } = require("../../utils/analytics/clicks");
 const { location } = require("../../utils/analytics/location");
 
@@ -40,6 +44,7 @@ router.post("/", async (req, res) => {
 
   if (data.unique) return;
   if (!data.domain) return;
+  await activateWebsite(data.domain);
 
   try {
     await location(

@@ -9,8 +9,8 @@ module.exports = async (userEmail, code) => {
 
     const transporter = nodemailer.createTransport({
       host: "mail.privateemail.com",
-      port: 587,
-      secure: false,
+      port: 465,
+      secure: true,
       auth: {
         user: EMAIL,
         pass: EMAIL_PASSWORD,

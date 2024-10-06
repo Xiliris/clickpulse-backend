@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const { JSON_PRIVATE_KEY, JSON_PUBLIC_KEY } = process.env;
+console.log(JSON_PRIVATE_KEY, JSON_PUBLIC_KEY)
 
 function signToken(username) {
   if (!username) return null;

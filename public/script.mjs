@@ -30,7 +30,7 @@ const data = {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log('Clickpulse script loaded!');
+  console.log("Clickpulse script loaded!");
   document.addEventListener("click", (event) => {
     const clickedElement = event.target.closest("a, button");
 
@@ -109,13 +109,20 @@ window.addEventListener("beforeunload", () => {
 
   data.exit_page = window.location.pathname;
 
-  fetch("https://api.clickpulse.xyz/dashboard/collect", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(
+      "https://api.clickpulse.xyz/dashboard/collect",
+      JSON.stringify(data)
+    );
+  } else {
+    fetch("https://api.clickpulse.xyz/dashboard/collect", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  }
 });
 
 const logPath = () => {

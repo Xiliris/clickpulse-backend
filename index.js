@@ -15,13 +15,7 @@ const routeData = {
 const database = require("./database/mysql");
 
 app.use(bodyParser.json());
-app.use(
-    cors({
-        origin: '*', 
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true,
-    })
-);
+app.use(cors());
 const routeHandler = new RouteHandler(app, routePath, routeData);
 
 routeHandler.handleRoutes();

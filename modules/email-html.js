@@ -181,7 +181,7 @@ module.exports = (code) => {
                                     <div style="line-height: 140%; text-align: center; word-wrap: break-word;">
                                       <p style="font-size: 14px; line-height: 140%; color: #a3b8c7;">
                                         <span style="font-size: 16px; line-height: 22.4px; font-family: 'Raleway', sans-serif;">
-                                          If you did not sign up for an account, please ignore this email or contact us at Clickpulse.service@gmail.com
+                                          If you did not sign up for an account, please ignore this email or contact us at support@clickpulse.xyz
                                         </span>
                                       </p>
                                     </div>

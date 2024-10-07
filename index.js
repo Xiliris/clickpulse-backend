@@ -16,11 +16,12 @@ const database = require("./database/mysql");
 
 app.use(bodyParser.json());
 app.use(
-  cors({
-    origin: "*",
-  })
+    cors({
+        origin: '*', 
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true,
+    })
 );
-
 const routeHandler = new RouteHandler(app, routePath, routeData);
 
 routeHandler.handleRoutes();

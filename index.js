@@ -5,14 +5,17 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-const corsOptions = {
-  origin: "*",
-  credentials: true,
-  optionSuccessStatus: 200,
-};
+app.use(
+  cors({
+    origin: "*", 
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type,Authorization",
+    credentials: true, 
+  })
+);
+app.options("*", cors());
 
-app.use(cors(corsOptions));
+app.use(bodyParser.json());
 
 const RouteHandler = require("@xiliris/express-route-handler");
 const path = require("path");

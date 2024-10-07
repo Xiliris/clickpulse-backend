@@ -1,4 +1,4 @@
-const htmlTemplate = require("./email-html");
+const htmlTemplate = require("./change-password-html");
 const { EMAIL, EMAIL_PASSWORD, FRONTEND_URL } = process.env;
 
 const nodemailer = require("nodemailer");
@@ -20,7 +20,7 @@ module.exports = async (userEmail, code) => {
     const mailOptions = {
       from: `No Reply <${EMAIL}>`,
       to: userEmail,
-      subject: "Verify your account at clickpulse.xyz",
+      subject: "Chage password at clickpulse.xyz",
       html,
     };
 

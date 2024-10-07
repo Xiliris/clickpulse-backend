@@ -11,8 +11,6 @@ app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, "public")));
 
-console.log(path.join(__dirname, "public"));
-
 const RouteHandler = require("@xiliris/express-route-handler");
 const routePath = path.join(__dirname, "routes");
 const routeData = {

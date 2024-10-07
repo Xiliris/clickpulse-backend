@@ -21,11 +21,7 @@ router.post("/", async (req, res) => {
       return res.status(404).json("Domain not found.");
     }
 
-    // Using a transaction for safety
-    await database.beginTransaction();
-
     await Promise.all([
-      database.query("DELETE FROM websites WHERE domain = ?", [domain]),
       database.query("DELETE FROM anchors WHERE domain = ?", [domain]),
       database.query("DELETE FROM bounce_rate WHERE domain = ?", [domain]),
       database.query("DELETE FROM browsers WHERE domain = ?", [domain]),
@@ -42,13 +38,11 @@ router.post("/", async (req, res) => {
       database.query("DELETE FROM total_page WHERE domain = ?", [domain]),
       database.query("DELETE FROM visited_page WHERE domain = ?", [domain]),
       database.query("DELETE FROM verify_websites WHERE domain = ?", [domain]),
+      database.query("DELETE FROM websites WHERE domain = ?", [domain]),
     ]);
-
-    await database.commit();
 
     res.status(200).json("Website deleted successfully.");
   } catch (e) {
-    await database.rollback();
     console.error(e);
     res.status(500).json("An error occurred.");
   }

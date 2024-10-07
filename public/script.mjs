@@ -1,6 +1,6 @@
-import { os, browser, device } from "./utils/browser-info.js";
-import unique from "./utils/unique.js";
-import fetchLocationInfo from "./utils/location-info.js";
+import { os, browser, device } from "./utils/browser-info.mjs";
+import unique from "./utils/unique.mjs";
+import fetchLocationInfo from "./utils/location-info.mjs";
 
 const data = {
   domain: null,

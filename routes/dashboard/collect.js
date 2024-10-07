@@ -23,7 +23,7 @@ const { location } = require("../../utils/analytics/location");
 
 const router = require("express").Router();
 router.post("/", async (req, res) => {
-  let data = {
+  const data = {
     domain: req.body.domain,
     unique: req.body.unique,
     entry_page: req.body.entry_page || "/",
@@ -41,10 +41,6 @@ router.post("/", async (req, res) => {
     anchors: req.body.anchors || [],
     referrer: req.body.referrer || "Direct / None",
   };
-
-  if (data.visited_pages.length >= 1) {
-    data.bounce_rate = true;
-  }
 
   if (data.unique) return;
   if (!data.domain) return;

@@ -12,8 +12,6 @@ router.post("/", async (req, res) => {
   if (!user) return res.status(400).json("Invalid token.");
 
   try {
-    console.log(user);
-
     const [rows] = await database.query("SELECT * FROM websites WHERE id = ?", [
       domain_id,
     ]);

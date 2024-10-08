@@ -3,24 +3,21 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const path = require("path");
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use(bodyParser.json());
+
 const RouteHandler = require("@xiliris/express-route-handler");
-const path = require("path");
 const routePath = path.join(__dirname, "routes");
 const routeData = {
   log: true,
 };
 
 const database = require("./database/mysql");
-
-app.use(bodyParser.json());
-app.use(
-  cors({
-    origin: "*",
-  })
-);
-
 const routeHandler = new RouteHandler(app, routePath, routeData);
 
 routeHandler.handleRoutes();

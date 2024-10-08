@@ -2,7 +2,7 @@ const database = require("../../database/mysql");
 async function activateWebsite(domain) {
   console.log(domain);
   try {
-    database.query(
+    await database.query(
       `UPDATE websites SET active = true WHERE domain = ? AND active = false`,
       [domain]
     );

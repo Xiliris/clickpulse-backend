@@ -22,6 +22,7 @@ const { anchors, buttons } = require("../../utils/analytics/clicks");
 const { location } = require("../../utils/analytics/location");
 
 const router = require("express").Router();
+
 router.post("/", async (req, res) => {
   const data = {
     domain: req.body.domain,
@@ -42,9 +43,9 @@ router.post("/", async (req, res) => {
     referrer: req.body.referrer || "Direct / None",
   };
 
+  // Early returns with error responses
   if (!data.domain) return res.status(400).send("Domain is missing");
   await activateWebsite(data.domain);
-
   if (data.unique) return res.status(400).send("Duplicate request: unique flag is true");
 
   try {
@@ -56,86 +57,72 @@ router.post("/", async (req, res) => {
       data.country_code
     );
 
-    await entryPage(
-      data.domain,
-      data.entry_page,
-      data.session_duration / data.visited_pages.length,
-      data.bounce_rate
-    );
-    await exitPage(
-      data.domain,
-      data.exit_page,
-      data.session_duration / data.visited_pages.length,
-      data.bounce_rate
-    );
-    await os(data.domain, data.os, data.session_duration, data.bounce_rate);
-    await browser(
-      data.domain,
-      data.browser,
-      data.session_duration,
-      data.bounce_rate
-    );
-    await device(
-      data.domain,
-      data.device,
-      data.session_duration,
-      data.bounce_rate
-    );
-    await referrer(
-      data.domain,
-      data.referrer,
-      data.session_duration,
-      data.bounce_rate
-    );
+    const pageVisitDuration = data.visited_pages.length > 0
+      ? data.session_duration / data.visited_pages.length
+      : data.session_duration;
+
+    // Entry and Exit pages
+    await entryPage(data.domain, data.entry_page, pageVisitDuration, data.bounce_rate);
+    await exitPage(data.domain, data.exit_page, pageVisitDuration, data.bounce_rate);
+
+    // Client information
+    await os(data.domain, data.os, pageVisitDuration, data.bounce_rate);
+    await browser(data.domain, data.browser, pageVisitDuration, data.bounce_rate);
+    await device(data.domain, data.device, pageVisitDuration, data.bounce_rate);
+    await referrer(data.domain, data.referrer, pageVisitDuration, data.bounce_rate);
+
+    // Engagement data
     await bounce_rate(data.domain, data.bounce_rate);
     await session_duration(data.domain, data.session_duration);
     await totalPage(data.domain, data.visited_pages.length + 1);
 
+    // Visited Pages
     if (data.visited_pages.length === 0) {
       await visitedPages(
         data.domain,
         data.entry_page,
-        data.session_duration / (data.visited_pages.length + 1),
+        pageVisitDuration,
         data.bounce_rate
       );
     } else {
-      for (const visitedPage of data.visited_pages) {
+      const visitedPagesPromises = data.visited_pages.map((visitedPage) => {
         if (visitedPage) {
-          await visitedPages(
+          return visitedPages(
             data.domain,
             visitedPage,
-            data.session_duration / (data.visited_pages.length + 1),
+            pageVisitDuration,
             data.bounce_rate
           );
         }
-      }
+      });
+      await Promise.all(visitedPagesPromises);
     }
 
+    // Buttons
     if (Array.isArray(data.buttons)) {
-      for (const button of data.buttons) {
-        await buttons(
-          data.domain,
-          button.elementId,
-          button.content,
-          button.clicks
-        );
-      }
+      const buttonPromises = data.buttons.map(button => buttons(
+        data.domain,
+        button.elementId,
+        button.content,
+        button.clicks
+      ));
+      await Promise.all(buttonPromises);
     }
 
+    // Anchors
     if (Array.isArray(data.anchors)) {
-      for (const anchor of data.anchors) {
-        await anchors(
-          data.domain,
-          anchor.elementId,
-          anchor.content,
-          anchor.clicks
-        );
-      }
+      const anchorPromises = data.anchors.map(anchor => anchors(
+        data.domain,
+        anchor.elementId,
+        anchor.content,
+        anchor.clicks
+      ));
+      await Promise.all(anchorPromises);
     }
 
     res.status(200).send("Data processed");
   } catch (error) {
-    console.error("Error processing data:", error.message);
+    console.error("Error processing data:", error);
     res.status(500).send("An error occurred");
   }
 });

@@ -43,10 +43,10 @@ router.post("/", async (req, res) => {
     referrer: req.body.referrer || "Direct / None",
   };
 
-  if (!data.domain) return res.status(400).send("Domain is missing");
+  if (!data.domain) return res.status(401).send("Domain is missing");
   await activateWebsite(data.domain);
   if (data.unique)
-    return res.status(400).send("Duplicate request: unique flag is true");
+    return res.status(402).send("Duplicate request: unique flag is true");
 
   try {
     await location(

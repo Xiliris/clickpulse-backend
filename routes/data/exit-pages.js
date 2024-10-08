@@ -21,28 +21,26 @@ router.get("/:id", authenticate, async (req, res) => {
 
     if (!startDate || !endDate) {
       [rows] = await database.query(
-        "SELECT * FROM browsers WHERE domain = ? ORDER BY date DESC",
+        "SELECT * FROM exit_page WHERE domain = ? ORDER BY date DESC",
         [authorized.domain]
       );
-
       endDate = addDayDate(rows[0].date);
       startDate = addDayDate(rows[rows.length - 1].date);
     }
-
     [rows] = await database.query(
-      "SELECT browser, SUM(visits) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY browser ORDER BY visits DESC",
+      "SELECT path, SUM(views) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM exit_page WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY path ORDER BY visits DESC",
       [authorized.domain, startDate, endDate]
     );
 
     if (rows.length === 0) {
       return res
         .status(404)
-        .json("No browser records found for the specified date range.");
+        .json("No exit page records found for the specified date range.");
     }
 
     res.json(rows);
   } catch (error) {
-    console.error("Error during fetching browsers:", error.message);
+    console.error("Error during fetching exit page:", error.message);
     res.status(500).json("Internal server error.");
   }
 });

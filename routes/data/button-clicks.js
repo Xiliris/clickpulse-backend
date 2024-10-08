@@ -4,6 +4,7 @@ const router = require("express").Router();
 const database = require("../../database/mysql");
 const { addDayDate } = require("../../modules/dateRangeUtils");
 
+// New GET request for buttons
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const user = req.user;
@@ -21,7 +22,7 @@ router.get("/:id", authenticate, async (req, res) => {
 
     if (!startDate || !endDate) {
       [rows] = await database.query(
-        "SELECT * FROM browsers WHERE domain = ? ORDER BY date DESC",
+        "SELECT * FROM buttons WHERE domain = ? ORDER BY date DESC",
         [authorized.domain]
       );
 
@@ -30,19 +31,25 @@ router.get("/:id", authenticate, async (req, res) => {
     }
 
     [rows] = await database.query(
-      "SELECT browser, SUM(visits) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY browser ORDER BY visits DESC",
+      "SELECT elementId, content, SUM(clicks) AS clicks FROM buttons WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY elementId, content ORDER BY clicks DESC",
       [authorized.domain, startDate, endDate]
     );
 
     if (rows.length === 0) {
       return res
         .status(404)
-        .json("No browser records found for the specified date range.");
+        .json("No button records found for the specified date range.");
     }
 
-    res.json(rows);
+    fromatedResponse = rows.map((row) => ({
+      content: row.content,
+      id: row.elementId,
+      clicks: row.clicks,
+    }));
+
+    res.json(fromatedResponse);
   } catch (error) {
-    console.error("Error during fetching browsers:", error.message);
+    console.error("Error during fetching buttons:", error.message);
     res.status(500).json("Internal server error.");
   }
 });

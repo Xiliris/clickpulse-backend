@@ -2,10 +2,16 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const router = require("express").Router();
 const database = require("../../database/mysql");
+const {
+  generateDateRange,
+  mergeDataWithDateRange,
+  addDayDate,
+} = require("../../modules/dateRangeUtils");
 
-router.get("/:id/:date", authenticate, async (req, res) => {
-  const { id, date } = req.params;
+router.get("/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
   const user = req.user;
+  let { startDate, endDate } = req.query;
 
   try {
     const authorized = await authorize(id, user.username);
@@ -14,23 +20,62 @@ router.get("/:id/:date", authenticate, async (req, res) => {
       return res.status(401).json("Unauthorized.");
     }
 
-    const [rows] = await database.query("SELECT * FROM bounce_rate WHERE domain = ? AND date = ?", [
-      authorized.domain,
-      date,
-    ]);
+    let rows;
 
-    if (rows.length === 0) {
-      return res.status(404).json("Bounce rate page not found.");
+    if (!startDate || !endDate) {
+      [rows] = await database.query(
+        `SELECT date, SUM(bounces) AS totalBounces, SUM(requests) AS totalRequests
+         FROM bounce_rate 
+         GROUP BY date 
+         ORDER BY date DESC`,
+        [authorized.domain]
+      );
+      endDate = addDayDate(rows[0].date);
+      startDate = addDayDate(rows[rows.length - 1].date);
+    } else {
+      [rows] = await database.query(
+        `SELECT date, SUM(bounces) AS totalBounces, SUM(requests) AS totalRequests
+       FROM bounce_rate 
+       WHERE domain = ? AND date BETWEEN ? AND ? 
+       GROUP BY date 
+       ORDER BY date`,
+        [authorized.domain, startDate, endDate]
+      );
     }
 
-    const requests = rows[0].requests;
-    const bounces = rows[0].bounces;
+    const dateRange = generateDateRange(startDate, endDate);
 
-    const bounceRate = ((bounces / requests) * 100).toFixed(1) + "%";
+    if (rows.length === 0) {
+      const result = mergeDataWithDateRange(
+        dates,
+        [],
+        "date",
+        ["bounce_rate"],
+        0
+      );
+      return res.json(result);
+    }
 
-    res.json({ bounces: bounceRate });
+    const formattedRows = rows.map((row) => {
+      const originalDate = new Date(row.date);
+      originalDate.setDate(originalDate.getDate() + 1);
+      return {
+        date: originalDate.toISOString().slice(0, 10),
+        bounce_rate: ((row.totalBounces / row.totalRequests) * 100).toFixed(1),
+      };
+    });
+
+    const mergedData = mergeDataWithDateRange(
+      dateRange,
+      formattedRows,
+      "date",
+      ["bounce_rate"],
+      "0.0"
+    );
+
+    res.json(mergedData);
   } catch (error) {
-    console.error("Error during fetching bounce-rate:", error.message);
+    console.error("Error during fetching bounce-rate data:", error.message);
     res.status(500).json("Internal server error.");
   }
 });

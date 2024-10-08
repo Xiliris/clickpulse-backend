@@ -1,64 +1,83 @@
 const database = require("../../database/mysql");
 
-async function device(domain, device) {
+async function trackMetric(domain, value, session, bounce, table, column) {
+  const date = new Date().toISOString().slice(0, 10);
+
   try {
-    const [rows] = await database.query("SELECT * FROM devices WHERE domain = ? AND device = ?", [domain, device]);
+    const [rows] = await database.query(
+      `SELECT * FROM ${table} WHERE domain = ? AND ${column} = ? AND date = ?`,
+      [domain, value, date]
+    );
 
     if (rows.length === 0) {
-      await database.query("INSERT INTO devices (domain, device, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        device,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
+      // Insert new row if no record exists for the given domain, value, and date
+      await database.query(
+        `INSERT INTO ${table} (domain, ${column}, session_duration, bounce_rate, visits, date) VALUES (?, ?, ?, ?, ?, ?)`,
+        [domain, value, session, bounce, 1, date]
+      );
     } else {
-      await database.query("UPDATE devices SET views = views + 1 WHERE domain = ? AND device = ?", [domain, device]);
+      // Update the existing row
+      await database.query(
+        `UPDATE ${table} 
+         SET visits = visits + 1, 
+             session_duration = session_duration + ?, 
+             bounce_rate = bounce_rate + ?
+         WHERE domain = ? AND ${column} = ? AND date = ?`,
+        [session, bounce, domain, value, date]
+      );
     }
   } catch (error) {
-    console.error("Error during device:", error.message);
+    console.error(`Error during ${table} update:`, error.message);
   }
 }
 
-async function browser(domain, browser) {
-  try {
-    const [rows] = await database.query("SELECT * FROM browsers WHERE domain = ? AND browser = ?", [domain, browser]);
-
-    if (rows.length === 0) {
-      await database.query("INSERT INTO browsers (domain, browser, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        browser,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
-    } else {
-      await database.query("UPDATE browsers SET views = views + 1 WHERE domain = ? AND browser = ?", [domain, browser]);
-    }
-  } catch (error) {
-    console.error("Error during browser:", error.message);
-  }
+async function device(domain, device, session, isBounce) {
+  await trackMetric(
+    domain,
+    device,
+    session,
+    isBounce ? 1 : 0,
+    "devices",
+    "device"
+  );
 }
 
-async function os(domain, os) {
-  try {
-    const [rows] = await database.query("SELECT * FROM operating_systems WHERE domain = ? AND os = ?", [domain, os]);
+async function browser(domain, browser, session, isBounce) {
+  await trackMetric(
+    domain,
+    browser,
+    session,
+    isBounce ? 1 : 0,
+    "browsers",
+    "browser"
+  );
+}
 
-    if (rows.length === 0) {
-      await database.query("INSERT INTO operating_systems (domain, os, views, date) VALUES (?, ?, ?, ?)", [
-        domain,
-        os,
-        1,
-        new Date().toISOString().slice(0, 10),
-      ]);
-    } else {
-      await database.query("UPDATE operating_systems SET views = views + 1 WHERE domain = ? AND os = ?", [domain, os]);
-    }
-  } catch (error) {
-    console.error("Error during operating_systems:", error.message);
-  }
+async function os(domain, os, session, isBounce) {
+  await trackMetric(
+    domain,
+    os,
+    session,
+    isBounce ? 1 : 0,
+    "operating_systems",
+    "os"
+  );
+}
+
+async function referrer(domain, os, session, isBounce) {
+  await trackMetric(
+    domain,
+    os,
+    session,
+    isBounce ? 1 : 0,
+    "referrer",
+    "source"
+  );
 }
 
 module.exports = {
   device,
   browser,
   os,
+  referrer,
 };

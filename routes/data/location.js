@@ -21,7 +21,7 @@ router.get("/:id", authenticate, async (req, res) => {
 
     if (!startDate || !endDate) {
       [rows] = await database.query(
-        "SELECT * FROM browsers WHERE domain = ? ORDER BY date DESC",
+        "SELECT * FROM location WHERE domain = ? ORDER BY date DESC",
         [authorized.domain]
       );
 
@@ -30,19 +30,19 @@ router.get("/:id", authenticate, async (req, res) => {
     }
 
     [rows] = await database.query(
-      "SELECT browser, SUM(visits) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM browsers WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY browser ORDER BY visits DESC",
+      "SELECT country, SUM(visits) AS visits, SUM(session_duration) AS time_spent, SUM(bounce_rate) AS bounce_rate FROM location WHERE domain = ? AND date BETWEEN ? AND ? GROUP BY country ORDER BY visits DESC",
       [authorized.domain, startDate, endDate]
     );
 
     if (rows.length === 0) {
       return res
         .status(404)
-        .json("No browser records found for the specified date range.");
+        .json("No location records found for the specified date range.");
     }
 
     res.json(rows);
   } catch (error) {
-    console.error("Error during fetching browsers:", error.message);
+    console.error("Error during fetching location:", error.message);
     res.status(500).json("Internal server error.");
   }
 });

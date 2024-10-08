@@ -1,21 +1,12 @@
-const fs = require("fs");
-const path = require("path");
 const jwt = require("jsonwebtoken");
 
-const privateKey = fs.readFileSync(
-  path.resolve(__dirname, "../keys/private.pem"),
-  "utf8"
-);
-const publicKey = fs.readFileSync(
-  path.resolve(__dirname, "../keys/public.pem"),
-  "utf8"
-);
+const { JSON_PRIVATE_KEY, JSON_PUBLIC_KEY } = process.env;
 
 function signToken(username) {
   if (!username) return null;
   try {
     const payload = { username };
-    const jwtToken = jwt.sign(payload, privateKey, {
+    const jwtToken = jwt.sign(payload, JSON_PRIVATE_KEY, {
       algorithm: "RS256",
       expiresIn: "7d",
     });
@@ -30,7 +21,7 @@ function signToken(username) {
 function verifyToken(token) {
   if (!token) return null;
   try {
-    const decoded = jwt.verify(token, publicKey, {
+    const decoded = jwt.verify(token, JSON_PUBLIC_KEY, {
       algorithms: ["RS256"],
     });
     return decoded;

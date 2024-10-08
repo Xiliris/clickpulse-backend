@@ -43,10 +43,10 @@ router.post("/", async (req, res) => {
     referrer: req.body.referrer || "Direct / None",
   };
 
-  // Early returns with error responses
   if (!data.domain) return res.status(400).send("Domain is missing");
   await activateWebsite(data.domain);
-  if (data.unique) return res.status(400).send("Duplicate request: unique flag is true");
+  if (data.unique)
+    return res.status(400).send("Duplicate request: unique flag is true");
 
   try {
     await location(
@@ -57,19 +57,40 @@ router.post("/", async (req, res) => {
       data.country_code
     );
 
-    const pageVisitDuration = data.visited_pages.length > 0
-      ? data.session_duration / data.visited_pages.length
-      : data.session_duration;
+    const pageVisitDuration =
+      data.visited_pages.length > 0
+        ? data.session_duration / data.visited_pages.length
+        : data.session_duration;
 
     // Entry and Exit pages
-    await entryPage(data.domain, data.entry_page, pageVisitDuration, data.bounce_rate);
-    await exitPage(data.domain, data.exit_page, pageVisitDuration, data.bounce_rate);
+    await entryPage(
+      data.domain,
+      data.entry_page,
+      pageVisitDuration,
+      data.bounce_rate
+    );
+    await exitPage(
+      data.domain,
+      data.exit_page,
+      pageVisitDuration,
+      data.bounce_rate
+    );
 
     // Client information
     await os(data.domain, data.os, pageVisitDuration, data.bounce_rate);
-    await browser(data.domain, data.browser, pageVisitDuration, data.bounce_rate);
+    await browser(
+      data.domain,
+      data.browser,
+      pageVisitDuration,
+      data.bounce_rate
+    );
     await device(data.domain, data.device, pageVisitDuration, data.bounce_rate);
-    await referrer(data.domain, data.referrer, pageVisitDuration, data.bounce_rate);
+    await referrer(
+      data.domain,
+      data.referrer,
+      pageVisitDuration,
+      data.bounce_rate
+    );
 
     // Engagement data
     await bounce_rate(data.domain, data.bounce_rate);
@@ -100,23 +121,17 @@ router.post("/", async (req, res) => {
 
     // Buttons
     if (Array.isArray(data.buttons)) {
-      const buttonPromises = data.buttons.map(button => buttons(
-        data.domain,
-        button.elementId,
-        button.content,
-        button.clicks
-      ));
+      const buttonPromises = data.buttons.map((button) =>
+        buttons(data.domain, button.elementId, button.content, button.clicks)
+      );
       await Promise.all(buttonPromises);
     }
 
     // Anchors
     if (Array.isArray(data.anchors)) {
-      const anchorPromises = data.anchors.map(anchor => anchors(
-        data.domain,
-        anchor.elementId,
-        anchor.content,
-        anchor.clicks
-      ));
+      const anchorPromises = data.anchors.map((anchor) =>
+        anchors(data.domain, anchor.elementId, anchor.content, anchor.clicks)
+      );
       await Promise.all(anchorPromises);
     }
 

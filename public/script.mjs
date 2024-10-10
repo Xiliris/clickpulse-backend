@@ -65,11 +65,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const { protocol, hostname } = window.location;
   const port = window.location.port ? `:${window.location.port}` : "";
-  data.domain = `${protocol}//${hostname}${port}`;
+  data.domain = `${protocol}//${hostname}`;
   data.entry_page = window.location.pathname;
   data.os = os;
   data.browser = browser;
   data.device = device;
+  data.unique = unique();
   data.session_start = Date.now();
 
   const originalPushState = window.history.pushState;
@@ -89,7 +90,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 window.addEventListener("beforeunload", () => {
-  data.unique = unique();
   data.session_end = Date.now();
   const session_duration = (data.session_end - data.session_start) / 1000;
 

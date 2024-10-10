@@ -100,12 +100,6 @@ window.addEventListener("beforeunload", () => {
   data.exit_page = window.location.pathname;
 
   const sendData = async () => {
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(
-        "https://api.clickpulse.xyz/dashboard/collect",
-        JSON.stringify(data)
-      );
-    } else {
       try {
         const response = await fetch(
           "https://api.clickpulse.xyz/dashboard/collect",
@@ -121,7 +115,7 @@ window.addEventListener("beforeunload", () => {
       } catch (error) {
         console.error("Error sending data:", error);
       }
-    }
+    
   };
 
   sendData();

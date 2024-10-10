@@ -47,6 +47,7 @@ router.post("/", async (req, res) => {
   await activateWebsite(data.domain);
   if (data.unique)
     return res.status(402).send("Duplicate request: unique flag is true");
+  console.log(data)
 
   try {
     await location(
@@ -135,7 +136,7 @@ router.post("/", async (req, res) => {
       await Promise.all(anchorPromises);
     }
 
-    res.status(200).send("Data processed");
+    res.status(200).json(data);
   } catch (error) {
     console.error("Error processing data:", error);
     res.status(500).send("An error occurred");

@@ -24,10 +24,6 @@ router.post("/", async (req, res) => {
       domain,
       user.username,
     ]);
-    await database.query(
-      "INSERT INTO verify_websites (domain, active) VALUES (?, 0)",
-      [domain]
-    );
 
     res.status(200).json("Website created.");
   } catch (e) {

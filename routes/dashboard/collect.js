@@ -47,7 +47,7 @@ router.post("/", async (req, res) => {
   await activateWebsite(data.domain);
   if (data.unique)
     return res.status(402).send("Duplicate request: unique flag is true");
-  console.log(data)
+  console.log(data);
 
   try {
     await location(

@@ -4,7 +4,6 @@ const router = require("express").Router();
 const database = require("../../database/mysql");
 const { addDayDate } = require("../../modules/dateRangeUtils");
 
-// New GET request for buttons
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const user = req.user;

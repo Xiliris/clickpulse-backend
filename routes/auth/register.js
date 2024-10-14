@@ -17,10 +17,13 @@ router.post("/", async (req, res) => {
       return res.status(400).json("Invalid email.");
     }
 
-    const [user] = await database.query("SELECT * FROM users WHERE username = ? OR email = ?", [username, email]);
+    const [user] = await database.query(
+      "SELECT * FROM users WHERE username = ? OR email = ?",
+      [username, email]
+    );
 
     if (user.length > 0) {
-      return res.status(400).json("User already exists.");
+      return res.status(400).json("Username or email already in use.");
     }
 
     const hashedPassword = await hashPassword(password);
@@ -30,17 +33,22 @@ router.post("/", async (req, res) => {
 
     do {
       code = createCode(5);
-      const [rows] = await database.query("SELECT * FROM verify_users WHERE code = ?", [code]);
+      const [rows] = await database.query(
+        "SELECT * FROM verify_users WHERE code = ?",
+        [code]
+      );
       codeExists = rows.length > 0;
     } while (codeExists);
 
-    await database.query("INSERT INTO users (email, username, password) VALUES (?, ?, ?)", [
-      email,
-      username,
-      hashedPassword,
-    ]);
+    await database.query(
+      "INSERT INTO users (email, username, password) VALUES (?, ?, ?)",
+      [email, username, hashedPassword]
+    );
 
-    await database.query("INSERT INTO verify_users (code, username) VALUES (?, ?)", [code, username]);
+    await database.query(
+      "INSERT INTO verify_users (code, username) VALUES (?, ?)",
+      [code, username]
+    );
 
     await sendVerifyEmail(email, code);
 

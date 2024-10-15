@@ -51,6 +51,8 @@ router.post("/", async (req, res) => {
   try {
     await activateWebsite(data.domain);
 
+    res.status(204).json(data);
+
     await location(
       data.domain,
       data.country,
@@ -136,8 +138,6 @@ router.post("/", async (req, res) => {
       );
       await Promise.all(anchorPromises);
     }
-
-    res.status(200).json(data);
   } catch (error) {
     console.error("Error processing data:", error);
     res.status(500).send("An error occurred");

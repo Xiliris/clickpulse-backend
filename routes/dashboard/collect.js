@@ -43,10 +43,10 @@ router.post("/", async (req, res) => {
   };
 
   if (!data.domain) return res.status(401).send("Domain is missing");
-  console.error(data);
 
   try {
     await activateWebsite(data.domain);
+    throw new Error(data)
 
     res.status(204).json(data);
 

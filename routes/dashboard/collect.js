@@ -26,7 +26,6 @@ const router = require("express").Router();
 router.post("/", async (req, res) => {
   const data = {
     domain: req.body.domain,
-    unique: req.body.unique,
     entry_page: req.body.entry_page || "/",
     exit_page: req.body.exit_page || "/",
     visited_pages: req.body.visited_pages || [],
@@ -44,8 +43,6 @@ router.post("/", async (req, res) => {
   };
 
   if (!data.domain) return res.status(401).send("Domain is missing");
-  if (data.unique)
-    return res.status(402).send("Duplicate request: unique flag is true");
   console.log(data);
 
   try {

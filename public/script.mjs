@@ -85,7 +85,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     logPath();
   };
 
-  console.log(data);
+  const sendData = async () => {
+    try {
+      const response = await fetch(
+        "https://api.clickpulse.xyz/dashboard/collect",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
+      if (!response.ok) {
+        console.error("Failed to send data:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error sending data:", error);
+    }
+  };
+
+  sendData();
 
   window.addEventListener("popstate", logPath);
 });
@@ -102,11 +120,14 @@ window.addEventListener("beforeunload", () => {
 
   const sendData = async () => {
     try {
-      const response = await fetch("https://api.clickpulse.xyz/dashboard/collect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        "https://api.clickpulse.xyz/dashboard/collect",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
       if (!response.ok) {
         console.error("Failed to send data:", response.statusText);
       }

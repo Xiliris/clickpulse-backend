@@ -45,10 +45,12 @@ router.post("/", async (req, res) => {
   if (!data.domain) return res.status(401).send("Domain is missing");
 
   try {
-    await activateWebsite(data.domain);
-    throw new Error(data)
+    const webStatus = await activateWebsite(data.domain);
 
-    res.status(204).json(data);
+    if (!webStatus)
+      return res.status(500).json({ message: "Error saving to database" });
+
+    await res.status(204).json(data);
 
     await location(
       data.domain,

@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const { hostname } = window.location;
+  console.log(hostname)
   data.domain = `${hostname}`;
   data.entry_page = window.location.pathname;
   data.os = os;

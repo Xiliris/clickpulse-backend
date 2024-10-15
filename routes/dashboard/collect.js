@@ -44,12 +44,13 @@ router.post("/", async (req, res) => {
   };
 
   if (!data.domain) return res.status(401).send("Domain is missing");
-  await activateWebsite(data.domain);
   if (data.unique)
     return res.status(402).send("Duplicate request: unique flag is true");
   console.log(data);
 
   try {
+    await activateWebsite(data.domain);
+
     await location(
       data.domain,
       data.country,
@@ -123,7 +124,7 @@ router.post("/", async (req, res) => {
     // Buttons
     if (Array.isArray(data.buttons)) {
       const buttonPromises = data.buttons.map((button) =>
-        buttons(data.domain, button.elementId, button.content, button.clicks)
+        buttons(data.domain, button.id, button.content, button.clicks)
       );
       await Promise.all(buttonPromises);
     }
@@ -131,7 +132,7 @@ router.post("/", async (req, res) => {
     // Anchors
     if (Array.isArray(data.anchors)) {
       const anchorPromises = data.anchors.map((anchor) =>
-        anchors(data.domain, anchor.elementId, anchor.content, anchor.clicks)
+        anchors(data.domain, anchor.id, anchor.content, anchor.clicks)
       );
       await Promise.all(anchorPromises);
     }

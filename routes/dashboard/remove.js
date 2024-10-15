@@ -37,7 +37,6 @@ router.post("/", async (req, res) => {
       database.query("DELETE FROM session_duration WHERE domain = ?", [domain]),
       database.query("DELETE FROM total_page WHERE domain = ?", [domain]),
       database.query("DELETE FROM visited_page WHERE domain = ?", [domain]),
-      database.query("DELETE FROM verify_websites WHERE domain = ?", [domain]),
       database.query("DELETE FROM websites WHERE domain = ?", [domain]),
     ]);
 

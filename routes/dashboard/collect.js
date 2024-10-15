@@ -1,4 +1,5 @@
 const { activateWebsite } = require("../../utils/analytics/activate-website");
+const database = require('../../database/mysql');
 
 const {
   entryPage,
@@ -45,10 +46,7 @@ router.post("/", async (req, res) => {
   if (!data.domain) return res.status(401).send("Domain is missing");
 
   try {
-    const webStatus = await activateWebsite(data.domain);
-
-    if (!webStatus)
-      return res.status(500).json({ message: "Error saving to database" });
+    await database.query('INSERT INTO temp_logs (message) VALUES (?)', [data])
 
     await res.status(204).json(data);
 

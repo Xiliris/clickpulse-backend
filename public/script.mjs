@@ -63,9 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to fetch location info:", error);
   }
 
-  const { protocol, hostname } = window.location;
-  const port = window.location.port ? `:${window.location.port}` : "";
-  data.domain = `${protocol}//${hostname}`;
+  const { hostname } = window.location;
+  data.domain = `${hostname}`;
   data.entry_page = window.location.pathname;
   data.os = os;
   data.browser = browser;

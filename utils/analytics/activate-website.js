@@ -1,9 +1,14 @@
 const database = require("../../database/mysql");
 async function activateWebsite(domain) {
   try {
-    await database.query(`UPDATE websites SET active = true WHERE domain = ?`, [
-      domain,
-    ]);
+    const [result] = await database.query(
+      `UPDATE websites SET active = true WHERE domain = ?`,
+      [domain]
+    );
+    if (result.affectedRows <= 0) {
+      return false;
+    }
+
     return true;
   } catch (err) {
     console.error(err);

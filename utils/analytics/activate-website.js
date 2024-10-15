@@ -4,8 +4,10 @@ async function activateWebsite(domain) {
     await database.query(`UPDATE websites SET active = true WHERE domain = ?`, [
       domain,
     ]);
+    return true;
   } catch (err) {
     console.error(err);
+    return false;
   }
 }
 

@@ -101,7 +101,7 @@ window.addEventListener("beforeunload", () => {
   delete data.session_end;
   data.exit_page = window.location.pathname;
 
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data)]);
 
   // Use sendBeacon to send the data
   navigator.sendBeacon("https://api.clickpulse.xyz/dashboard/collect", blob);

@@ -41,12 +41,10 @@ router.post("/", async (req, res) => {
     anchors: req.body.anchors || [],
     referrer: req.body.referrer || "Direct / None",
   };
-  console.log(data);
 
   if (!data.domain) return res.status(401).send("Domain is missing");
 
   try {
-    await res.status(204);
     await activateWebsite(data.domain);
 
     await location(
@@ -63,34 +61,14 @@ router.post("/", async (req, res) => {
         : data.session_duration;
 
     // Entry and Exit pages
-    await entryPage(
-      data.domain,
-      data.entry_page,
-      pageVisitDuration,
-      data.bounce_rate
-    );
-    await exitPage(
-      data.domain,
-      data.exit_page,
-      pageVisitDuration,
-      data.bounce_rate
-    );
+    await entryPage(data.domain, data.entry_page, pageVisitDuration, data.bounce_rate);
+    await exitPage(data.domain, data.exit_page, pageVisitDuration, data.bounce_rate);
 
     // Client information
     await os(data.domain, data.os, pageVisitDuration, data.bounce_rate);
-    await browser(
-      data.domain,
-      data.browser,
-      pageVisitDuration,
-      data.bounce_rate
-    );
+    await browser(data.domain, data.browser, pageVisitDuration, data.bounce_rate);
     await device(data.domain, data.device, pageVisitDuration, data.bounce_rate);
-    await referrer(
-      data.domain,
-      data.referrer,
-      pageVisitDuration,
-      data.bounce_rate
-    );
+    await referrer(data.domain, data.referrer, pageVisitDuration, data.bounce_rate);
 
     // Engagement data
     await bounce_rate(data.domain, data.bounce_rate);
@@ -99,21 +77,11 @@ router.post("/", async (req, res) => {
 
     // Visited Pages
     if (data.visited_pages.length === 0) {
-      await visitedPages(
-        data.domain,
-        data.entry_page,
-        pageVisitDuration,
-        data.bounce_rate
-      );
+      await visitedPages(data.domain, data.entry_page, pageVisitDuration, data.bounce_rate);
     } else {
       const visitedPagesPromises = data.visited_pages.map((visitedPage) => {
         if (visitedPage) {
-          return visitedPages(
-            data.domain,
-            visitedPage,
-            pageVisitDuration,
-            data.bounce_rate
-          );
+          return visitedPages(data.domain, visitedPage, pageVisitDuration, data.bounce_rate);
         }
       });
       await Promise.all(visitedPagesPromises);
@@ -134,6 +102,9 @@ router.post("/", async (req, res) => {
       );
       await Promise.all(anchorPromises);
     }
+
+    // Send a successful response
+    res.status(200).send("Data processed successfully");
   } catch (error) {
     console.error("Error processing data:", error);
     res.status(500).send("An error occurred");

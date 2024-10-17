@@ -6,15 +6,10 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const PORT = process.env.PORT || 3000;
 
-const corsOptions = {
-  origin: '*', // Allow all origins
-  methods: ['GET', 'POST', 'OPTIONS'], // Allow specific methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
+app.options('*', cors());  // enable pre-flight
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
 
 const RouteHandler = require("@xiliris/express-route-handler");
 const routePath = path.join(__dirname, "routes");

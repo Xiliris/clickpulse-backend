@@ -6,8 +6,12 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.options('*', cors());  // enable pre-flight
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow all origins
+    callback(null, true);
+  }
+}));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 

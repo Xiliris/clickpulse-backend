@@ -105,7 +105,6 @@ window.addEventListener("beforeunload", () => {
     try {
       const response = await fetch("https://api.clickpulse.xyz/dashboard/collect", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!response.ok) {

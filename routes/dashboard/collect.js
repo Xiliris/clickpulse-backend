@@ -1,5 +1,4 @@
 const { activateWebsite } = require("../../utils/analytics/activate-website");
-const database = require('../../database/mysql');
 
 const {
   entryPage,
@@ -47,6 +46,7 @@ router.post("/", async (req, res) => {
 
   try {
     await res.status(204);
+    await activateWebsite(data.domain);
 
     await location(
       data.domain,

@@ -63,9 +63,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to fetch location info:", error);
   }
 
-  const { hostname } = window.location;
-  console.log(hostname)
-  data.domain = `${hostname}`;
+  const { protocol, hostname } = window.location;
+  const port = window.location.port ? `:${window.location.port}` : "";
+  data.domain = `${protocol}//${hostname}`;
   data.entry_page = window.location.pathname;
   data.os = os;
   data.browser = browser;
@@ -86,6 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     logPath();
   };
 
+  console.log(data);
+
   window.addEventListener("popstate", logPath);
 });
 
@@ -99,6 +101,20 @@ window.addEventListener("beforeunload", () => {
   delete data.session_end;
   data.exit_page = window.location.pathname;
 
-  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-  navigator.sendBeacon("https://api.clickpulse.xyz/dashboard/collect", blob);
+  const sendData = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/dashboard/collect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        console.error("Failed to send data:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error sending data:", error);
+    }
+  };
+
+  sendData();
 });

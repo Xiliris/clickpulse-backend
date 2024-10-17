@@ -46,6 +46,7 @@ router.post("/", async (req, res) => {
   if (!data.domain) return res.status(401).send("Domain is missing");
 
   try {
+    res.status(200).send("Data processed successfully");
     await activateWebsite(data.domain);
 
     await location(
@@ -105,7 +106,6 @@ router.post("/", async (req, res) => {
     }
 
     // Send a successful response
-    res.status(200).send("Data processed successfully");
   } catch (error) {
     console.error("Error processing data:", error);
     res.status(500).send("An error occurred");

@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
     anchors: req.body.anchors || [],
     referrer: req.body.referrer || "Direct / None",
   };
-
+  console.log(data)
   if (!data.domain) return res.status(401).send("Domain is missing");
 
   try {

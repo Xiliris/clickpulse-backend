@@ -6,11 +6,17 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const PORT = process.env.PORT || 3000;
 
+// Enable preflight across the board
+app.options('*', cors());
+
+// CORS middleware
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow all origins
-    callback(null, true);
-  }
+    callback(null, true); // Allow all origins
+  },
+  methods: ['GET', 'POST', 'OPTIONS'], // Allow specific methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
+  credentials: true, // Allow credentials if needed
 }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));

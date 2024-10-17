@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("popstate", logPath);
 });
 
-window.addEventListener("beforeunload", () => {
+window.addEventListener("beforeunload", async () => {
   data.session_end = Date.now();
   const session_duration = (data.session_end - data.session_start) / 1000;
 
@@ -101,8 +101,18 @@ window.addEventListener("beforeunload", () => {
   delete data.session_end;
   data.exit_page = window.location.pathname;
 
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  try {
+    const response = await fetch("https://api.clickpulse.xyz/dashboard/collect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      keepalive: true
+    });
 
-  // Use sendBeacon to send the data
-  navigator.sendBeacon("https://api.clickpulse.xyz/dashboard/collect", blob);
+    if (!response.ok) {
+      console.error("Failed to send data:", response.statusText);
+    }
+  } catch (error) {
+    console.error("Error sending data:", error);
+  }
 });

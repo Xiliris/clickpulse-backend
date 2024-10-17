@@ -101,20 +101,8 @@ window.addEventListener("beforeunload", () => {
   delete data.session_end;
   data.exit_page = window.location.pathname;
 
-  const sendData = async () => {
-    try {
-      const response = await fetch("https://api.clickpulse.xyz/dashboard/collect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        console.error("Failed to send data:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Error sending data:", error);
-    }
-  };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
 
-  sendData();
+  // Use sendBeacon to send the data
+  navigator.sendBeacon("https://api.clickpulse.xyz/dashboard/collect", blob);
 });

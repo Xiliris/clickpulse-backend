@@ -46,9 +46,7 @@ router.post("/", async (req, res) => {
   if (!data.domain) return res.status(401).send("Domain is missing");
 
   try {
-    await database.query('INSERT INTO temp_logs (message) VALUES (?)', [data])
-
-    await res.status(204).json(data);
+    await res.status(204);
 
     await location(
       data.domain,

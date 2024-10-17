@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const { protocol, hostname } = window.location;
   const port = window.location.port ? `:${window.location.port}` : "";
-  data.domain = `${protocol}//${hostname}`;
+  data.domain = `${hostname}`;
   data.entry_page = window.location.pathname;
   data.os = os;
   data.browser = browser;

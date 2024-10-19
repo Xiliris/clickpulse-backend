@@ -51,7 +51,7 @@ router.get("/:id", authenticate, async (req, res) => {
 
     const formattedRows = rows.map((row) => {
       const originalDate = new Date(row.date);
-      originalDate.setDate(originalDate.getDate() + 1);
+      originalDate.setDate(originalDate.getDate());
       const averageSessionDuration = row.total_duration / row.total_requests;
       return {
         date: originalDate.toISOString().slice(0, 10),

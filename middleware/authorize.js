@@ -2,7 +2,18 @@ const database = require("../database/mysql");
 
 async function authorize(id, owner) {
   try {
-    const [rows] = await database.query("SELECT * FROM websites WHERE id = ? AND owner = ?", [id, owner]);
+    if (owner === "Clickpulse") {
+      const [row] = await database.query(
+        "SELECT * FROM websites WHERE id = ?",
+        [id]
+      );
+      return row[0];
+    }
+
+    const [rows] = await database.query(
+      "SELECT * FROM websites WHERE id = ? AND owner = ?",
+      [id, owner]
+    );
 
     if (rows.length === 0) {
       return false;

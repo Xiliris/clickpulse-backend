@@ -50,7 +50,7 @@ router.get("/:id", authenticate, async (req, res) => {
     // Format the rows to ensure proper date formatting (YYYY-MM-DD)
     const formattedRows = rows.map((row) => {
       const originalDate = new Date(row.date);
-      originalDate.setDate(originalDate.getDate() + 1);
+      originalDate.setDate(originalDate.getDate());
       return {
         ...row,
         date: originalDate.toISOString().slice(0, 10), // Removed unnecessary date adjustment

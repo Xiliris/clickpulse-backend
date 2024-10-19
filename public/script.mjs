@@ -1,4 +1,4 @@
-import config from "./config.json";
+import config from "./config.js";
 import { os, browser, device } from "./utils/browser-info.mjs";
 import unique from "./utils/unique.mjs";
 import fetchLocationInfo from "./utils/location-info.mjs";

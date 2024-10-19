@@ -87,8 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     logPath();
   };
 
-  console.log(data);
-
   window.addEventListener("popstate", logPath);
 });
 

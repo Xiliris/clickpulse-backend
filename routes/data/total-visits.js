@@ -65,9 +65,7 @@ router.get("/:id", authenticate, async (req, res) => {
       ["total_visits"],
       0
     );
-    console.log(rows)
-    console.log(formattedRows)
-    console.log(result)
+
     res.json(result);
   } catch (error) {
     console.error("Error during fetching total views:", error.message);

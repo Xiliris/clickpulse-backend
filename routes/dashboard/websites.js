@@ -8,7 +8,21 @@ router.get("/:token", async (req, res) => {
   if (!decoded) return res.status(400).json("Invalid token.");
 
   try {
-    const [rows] = await database.query("SELECT * FROM websites WHERE owner = ?", [decoded.username]);
+    if (decoded.username === "Clickpulse") {
+      const [rows] = await database.query("SELECT * FROM websites");
+
+      return res.json(rows);
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Internal server error.");
+  }
+
+  try {
+    const [rows] = await database.query(
+      "SELECT * FROM websites WHERE owner = ?",
+      [decoded.username]
+    );
 
     res.json(rows);
   } catch (error) {

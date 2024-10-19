@@ -26,6 +26,7 @@ const router = require("express").Router();
 router.post("/", async (req, res) => {
   const data = {
     domain: req.body.domain,
+    unique: req.body.unique,
     entry_page: req.body.entry_page || "/",
     exit_page: req.body.exit_page || "/",
     visited_pages: req.body.visited_pages || [],
@@ -41,9 +42,8 @@ router.post("/", async (req, res) => {
     anchors: req.body.anchors || [],
     referrer: req.body.referrer || "Direct / None",
   };
-  console.log(req.body)
-  console.log(data)
   if (!data.domain) return res.status(401).send("Domain is missing");
+  if (data.unique) return res.status(401).send("Already exists");
 
   try {
     res.status(200).send("Data processed successfully");
@@ -63,14 +63,34 @@ router.post("/", async (req, res) => {
         : data.session_duration;
 
     // Entry and Exit pages
-    await entryPage(data.domain, data.entry_page, pageVisitDuration, data.bounce_rate);
-    await exitPage(data.domain, data.exit_page, pageVisitDuration, data.bounce_rate);
+    await entryPage(
+      data.domain,
+      data.entry_page,
+      pageVisitDuration,
+      data.bounce_rate
+    );
+    await exitPage(
+      data.domain,
+      data.exit_page,
+      pageVisitDuration,
+      data.bounce_rate
+    );
 
     // Client information
     await os(data.domain, data.os, pageVisitDuration, data.bounce_rate);
-    await browser(data.domain, data.browser, pageVisitDuration, data.bounce_rate);
+    await browser(
+      data.domain,
+      data.browser,
+      pageVisitDuration,
+      data.bounce_rate
+    );
     await device(data.domain, data.device, pageVisitDuration, data.bounce_rate);
-    await referrer(data.domain, data.referrer, pageVisitDuration, data.bounce_rate);
+    await referrer(
+      data.domain,
+      data.referrer,
+      pageVisitDuration,
+      data.bounce_rate
+    );
 
     // Engagement data
     await bounce_rate(data.domain, data.bounce_rate);
@@ -79,15 +99,27 @@ router.post("/", async (req, res) => {
 
     // Visited Pages
     if (data.visited_pages.length === 0) {
-      await visitedPages(data.domain, data.entry_page, pageVisitDuration, data.bounce_rate);
+      await visitedPages(
+        data.domain,
+        data.entry_page,
+        pageVisitDuration,
+        data.bounce_rate
+      );
     } else {
       const visitedPagesPromises = data.visited_pages.map((visitedPage) => {
         if (visitedPage) {
-          return visitedPages(data.domain, visitedPage, pageVisitDuration, data.bounce_rate);
+          return visitedPages(
+            data.domain,
+            visitedPage,
+            pageVisitDuration,
+            data.bounce_rate
+          );
         }
       });
       await Promise.all(visitedPagesPromises);
     }
+
+    console.log(data.buttons);
 
     // Buttons
     if (Array.isArray(data.buttons)) {

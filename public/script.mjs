@@ -1,3 +1,4 @@
+import config from "./config.json";
 import { os, browser, device } from "./utils/browser-info.mjs";
 import unique from "./utils/unique.mjs";
 import fetchLocationInfo from "./utils/location-info.mjs";
@@ -102,11 +103,11 @@ window.addEventListener("beforeunload", async () => {
   data.exit_page = window.location.pathname;
 
   try {
-    const response = await fetch("https://api.clickpulse.xyz/dashboard/collect", {
+    const response = await fetch(`${config.domain}/dashboard/collect`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-      keepalive: true
+      keepalive: true,
     });
 
     if (!response.ok) {

@@ -94,7 +94,7 @@ window.addEventListener("beforeunload", async () => {
   data.session_end = Date.now();
   const session_duration = (data.session_end - data.session_start) / 1000;
 
-  data.bounce_rate = data.visited_pages.length === 1 && session_duration < 15;
+  data.bounce_rate = session_duration < 20;
   data.session_duration = session_duration;
   delete data.session_start;
   delete data.session_end;

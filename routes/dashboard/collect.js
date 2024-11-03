@@ -45,6 +45,8 @@ router.post("/", async (req, res) => {
   if (!data.domain) return res.status(401).send("Domain is missing");
   if (data.unique) return res.status(401).send("Already exists");
 
+  if(session_duration / 1000 > 20) data.bounce_rate = false;
+
   try {
     res.status(200).send("Data processed successfully");
     await activateWebsite(data.domain);
